@@ -2,6 +2,22 @@ const $=id=>document.getElementById(id);
 const GAME=30, GOLD_P=.15, GOLD_PTS=5;
 const LV={easy:[1400,800],medium:[1100,550],hard:[850,380]};
 const LN={easy:"🌼 Easy",medium:"🌷 Medium",hard:"🔥 Hard"};
+
+/* Story: Tuli and the Missing Tulips */
+const INTRO=["Tuli the Tulip Mole is the gardener of Petal Park, and every spring her tulips bloom in all the colours of the rainbow. 🌷","But one night, a gang of mischievous moles sneaks into the garden and starts digging up the tulip bulbs! 😱","Tuli can’t catch them all by herself. Will you help her save the garden? 💕"];
+const CHAP={
+  easy:{t:"Chapter 1 · The Garden Gate 🌼",x:"The sneaky moles are only just getting started. Guard the gate and catch them before they dig up the bulbs!"},
+  medium:{t:"Chapter 2 · The Tulip Fields 🌷",x:"Word has spread, and the moles are quicker now! They are heading straight for the big tulip fields. Don’t let them through!"},
+  hard:{t:"Chapter 3 · The Midnight Burrow 🔥",x:"This is the final showdown! The Mole King’s gang is fast and fierce. Save the last tulips before sunrise!"}
+};
+const GOLDNOTE="✨ Watch out for golden moles. Each one carries a rare golden tulip bulb, worth +5 points!";
+/* [score needed to win, score needed for the best ending] */
+const GOAL={easy:[15,25],medium:[20,32],hard:[25,40]};
+const END={
+  easy:["The moles dug up a few bulbs, but Tuli replanted them. Try again and protect the Garden Gate! 🌱","You guarded the Garden Gate, and the first tulips are blooming again! Chapter 2 is waiting on Medium. 🌷","Perfect! Not one bulb was lost and the gate is sparkling. Tuli gives you a golden tulip badge. 🏅"],
+  medium:["The moles reached the fields and trampled some tulips. Tuli believes in you, so try again! 🌱","The Tulip Fields are safe, and the colours are coming back! The Midnight Burrow awaits on Hard. 🔥","Amazing! The fields are bursting with flowers, and the moles are running for the hills. 🌈"],
+  hard:["The Mole King’s gang got away with some bulbs. Tuli says the garden still needs you, so try again! 🌱","You beat the Mole King’s gang, and the sun is rising over Petal Park! The garden is saved. 🌅","LEGENDARY! The Mole King runs away, the whole garden blooms, and Tuli crowns you Hero of Petal Park! 👑🌸"]
+};
 const STAR="M0-6L1.8-1.9 6-1.9 2.6.8 3.8 5 0 2.5-3.8 5-2.6.8-6-1.9-1.8-1.9Z";
 
 /* Tuli the Tulip Mole (drawn in code so it stays tiny) */
@@ -93,11 +109,16 @@ function show(){
   if(curG){h.classList.add("golden");S.gold()}else S.pop();
 }
 function next(){clearTimeout(mt);mt=setTimeout(()=>{if(!playing)return;streak=0;show();next()},speed()*(curG?.7:1))}
-function lock(x){go.disabled=x;document.querySelectorAll(".lv").forEach(b=>b.disabled=x);$("help").disabled=x;$("top").disabled=x}
+function lock(x){go.disabled=x;document.querySelectorAll(".lv").forEach(b=>b.disabled=x);$("help").disabled=x;$("top").disabled=x;$("story").disabled=x}
 function refreshStats(){$("sc").textContent=score;$("tm").textContent=left;$("bs").textContent=mine[level]||0}
+const seen={};
 function start(){
   if(playing)return;if(!name){welcome();return}
-  closeOv();score=0;left=GAME;cur=-1;curG=false;streak=0;playing=true;t0=Date.now();
+  if(!seen[level]){seen[level]=1;chapter();return}
+  begin();
+}
+function begin(){
+  if(playing)return;closeOv();score=0;left=GAME;cur=-1;curG=false;streak=0;playing=true;t0=Date.now();
   msg.textContent="Quick! Catch the mole! 💕";go.textContent="Playing... 🌸";lock(true);refreshStats();S.start();show();next();
   cd=setInterval(()=>{left--;$("tm").textContent=left;if(left>0&&left<=3)S.tick();if(left<=0)end()},1000);
 }
@@ -131,6 +152,20 @@ $("snd").addEventListener("click",()=>{soundOn=!soundOn;$("snd").textContent=sou
 let view="";
 function closeOv(){$("ov").hidden=true;view=""}
 function openOv(h){$("md").innerHTML=h;$("ov").hidden=false}
+function chapter(){
+  view="";const c=CHAP[level];
+  openOv(`<h2>${c.t}</h2><p class="story">${c.x}</p><p class="note">${GOLDNOTE}</p><button class="btn" id="bg">Begin 🌷</button><div class="foot"><button class="ghost" id="cl">Not now</button></div>`);
+  $("bg").onclick=()=>{audio();begin()};$("cl").onclick=()=>{seen[level]=0;closeOv()};
+}
+function intro(i,after){
+  view="";const last=i>=INTRO.length-1;
+  openOv(`<h2>Tuli and the Missing Tulips 🌷</h2><p class="story">${INTRO[i]}</p><p class="note">${i+1} of ${INTRO.length}</p><button class="btn" id="nx">${last?(after?"Let’s help! 🎀":"Close"):"Next ➜"}</button>`);
+  $("nx").onclick=()=>{audio();if(!last)intro(i+1,after);else{ls.set("wm_story","1");after?after():closeOv()}};
+}
+function ending(){
+  const[w,b]=GOAL[level],k=score>=b?2:score>=w?1:0;
+  return `<p class="story"><b>${["Almost there…","The garden is saved! 🎉","Hero of Petal Park! 🏆"][k]}</b><br>${END[level][k]}</p>`;
+}
 function how(){return `<ul><li>🐹 Tap the mole when it pops up. +1 point each.</li><li>✨ A <b>golden</b> mole is worth +${GOLD_PTS} but vanishes fast.</li><li>🎵 Catch moles in a row for a combo. A wrong tap resets it.</li><li>⏰ You have ${GAME} seconds. The mole speeds up as time runs out.</li><li>🏆 Beat your best and climb the leaderboard!</li></ul>`}
 function welcome(){
   view="wel";
@@ -156,13 +191,14 @@ function lbHtml(){return `<div class="row" style="margin-top:10px">${Object.keys
 function wireTabs(){document.querySelectorAll(".ltab").forEach(b=>b.onclick=()=>drawBoard(b.dataset.l))}
 function results(rec){
   view="lb";drawBoard.l=level;
-  openOv(`<h2>Time’s up! 🎉</h2><p class="big">${score}</p><p class="note">${LN[level]} · ${rec?"New personal best! 🏆":"Best: "+(mine[level]||0)}</p>${lbHtml()}
+  openOv(`<h2>Time’s up! 🎉</h2><p class="big">${score}</p><p class="note">${LN[level]} · ${rec?"New personal best! 🏆":"Best: "+(mine[level]||0)}</p>${ending()}${lbHtml()}
     <button class="btn" id="again">Play Again 🔄</button><div class="foot"><button class="ghost" id="chg">Change player</button></div>`);
   wireTabs();drawBoard(level);$("again").onclick=start;$("chg").onclick=welcome;
 }
 $("top").onclick=()=>{view="lb";drawBoard.l=level;openOv(`<h2>🏆 Leaderboard</h2>${lbHtml()}<button class="btn" id="cl">Close</button>`);wireTabs();drawBoard(level);$("cl").onclick=closeOv};
 $("help").onclick=()=>{view="";openOv(`<h2>How to play 🌷</h2>${how()}<button class="btn" id="cl">Got it</button>`);$("cl").onclick=closeOv};
 
+$("story").onclick=()=>intro(0,null);
 paintLv();refreshStats();$("snd").textContent=soundOn?"🔊 Sound on":"🔇 Sound off";
 if(name)$("who").textContent=`Playing as ${name} ♡`;
-welcome();
+ls.get("wm_story","")?welcome():intro(0,welcome);
