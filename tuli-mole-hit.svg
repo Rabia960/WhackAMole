@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" aria-hidden="true">
+<path d="M50 32Q49 22 54 14" stroke="#7bbf6a" stroke-width="3" fill="none" stroke-linecap="round"/>
+<ellipse cx="45" cy="25" rx="7" ry="3.5" transform="rotate(-35 45 25)" fill="#8fd07a"/>
+<path d="M47 13L47 5 51 9 54 4 57 9 61 5 61 13Q54 19 47 13Z" fill="#ff7fb0"/>
+<circle cx="22" cy="42" r="6" fill="#a38ad6"/><circle cx="22" cy="42" r="3" fill="#ffc2d9"/>
+<circle cx="78" cy="42" r="6" fill="#a38ad6"/><circle cx="78" cy="42" r="3" fill="#ffc2d9"/>
+<ellipse cx="50" cy="63" rx="35" ry="32" fill="#b9a3e3"/>
+<path d="M50 54C64 58 68 76 50 83C32 76 36 58 50 54Z" fill="#fff1e6"/>
+<ellipse cx="50" cy="62" rx="7.5" ry="5.5" fill="#ff8fb8"/><ellipse cx="47.8" cy="60.2" rx="2.2" ry="1.2" fill="#fff" opacity=".8"/>
+<ellipse cx="26" cy="58" rx="5" ry="3" fill="#ff9cc2" opacity=".6"/><ellipse cx="74" cy="58" rx="5" ry="3" fill="#ff9cc2" opacity=".6"/>
+<path d="M30 42l10 10M40 42l-10 10M60 42l10 10M70 42l-10 10" stroke="#4a3358" stroke-width="3" stroke-linecap="round" fill="none"/><ellipse cx="50" cy="76" rx="4" ry="3" fill="#4a3358"/>
+<ellipse cx="26" cy="87" rx="9" ry="6" fill="#a38ad6"/><ellipse cx="74" cy="87" rx="9" ry="6" fill="#a38ad6"/>
+<path d="M21 91v-3M26 92v-4M31 91v-3M69 91v-3M74 92v-4M79 91v-3" stroke="#ffc2d9" stroke-width="2" stroke-linecap="round"/>
+<path transform="translate(17 20)" d="M0-6L1.8-1.9 6-1.9 2.6 0.8 3.8 5 0 2.5-3.8 5-2.6 0.8-6-1.9-1.8-1.9Z" fill="#ffd966"/><path transform="translate(85 26) scale(.8)" d="M0-6L1.8-1.9 6-1.9 2.6 0.8 3.8 5 0 2.5-3.8 5-2.6 0.8-6-1.9-1.8-1.9Z" fill="#ffd966"/></svg>
