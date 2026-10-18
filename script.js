@@ -182,9 +182,9 @@ const S={
 /* Shared online leaderboard.
    Order of preference: Firebase (when firebase-config.js is filled in),
    then the claude.ai page database, then this device only. */
-let db=null,rows=[],liveOnline=false;
+let db=null,rows=[],liveOnline=false,dbErr="";
 function onRows(snap){rows=snap.docs.map(d=>({id:d.id,...d.data()}));liveOnline=true;if(!$("ov").hidden&&view==="lb")drawBoard()}
-function listen(q){q.onSnapshot(onRows,()=>{liveOnline=false})}
+function listen(q){q.onSnapshot(onRows,e=>{liveOnline=false;dbErr=(e&&e.code)||"error";console.error("Firestore read failed:",e)})}
 const FB=window.FIREBASE_CONFIG;
 if(window.firebase&&FB&&FB.projectId){
   try{
@@ -196,8 +196,11 @@ if(window.firebase&&FB&&FB.projectId){
 }
 function saveScore(l,v){
   if(!db)return;
-  db.collection("scores").doc(pid+"_"+l).set({name,level:l,best:v,t:Date.now()}).catch(()=>{});
+  db.collection("scores").doc(pid+"_"+l).set({name,level:l,best:v,t:Date.now()})
+    .catch(e=>{dbErr=(e&&e.code)||"error";console.error("Firestore save failed:",e)});
 }
+// Upload every best score saved on this device (covers scores made before Firebase was set up).
+function syncMine(){if(!db||!name)return;Object.keys(mine).forEach(l=>{if(mine[l]>0)saveScore(l,mine[l])})}
 function boardFor(l){
   let list=rows.filter(r=>r.level===l&&r.name&&typeof r.best==="number");
   if(!liveOnline){list=mine[l]?[{id:pid+"_"+l,name,level:l,best:mine[l]}]:[]}
@@ -236,7 +239,8 @@ function begin(){
 function end(){
   playing=false;clearTimeout(mt);clearInterval(cd);reset();cur=-1;S.end();
   const rec=score>0&&score>(mine[level]||0);
-  if(rec){mine[level]=score;ls.set("wm_best",JSON.stringify(mine));saveScore(level,score);S.record()}
+  if(rec){mine[level]=score;ls.set("wm_best",JSON.stringify(mine));S.record()}
+  if(mine[level])saveScore(level,mine[level]);
   msg.textContent=`Time’s up! ${score} points 🎉`;go.textContent="Play Again 🔄";lock(false);refreshStats();
   results(rec);
 }
@@ -285,7 +289,7 @@ function welcome(){
   const i=$("nm");i.value=name;i.focus();
   document.querySelectorAll(".chr").forEach(b=>b.onclick=()=>{audio();setChar(b.dataset.c);document.querySelectorAll(".chr").forEach(x=>x.classList.toggle("on",x===b));$("meet").textContent="Meet "+CH[ch].full;S.pop()});
   const ok=()=>{const v=i.value.trim().replace(/\s+/g," ").slice(0,14);if(!v){i.focus();return}
-    name=v;ls.set("wm_name",name);paintWho();closeOv();if(!ls.get("wm_story",""))intro(0,null);
+    name=v;ls.set("wm_name",name);syncMine();paintWho();closeOv();if(!ls.get("wm_story",""))intro(0,null);
     msg.textContent=`Hi ${name}! Press Start 🌼`};
   $("ok").onclick=()=>{audio();ok()};i.onkeydown=e=>{if(e.key==="Enter")ok()};
 }
@@ -298,7 +302,7 @@ function drawBoard(l){
   list.slice(0,10).forEach(add);
   const mi=list.findIndex(r=>r.id===pid+"_"+l);if(mi>=10)add(list[mi],mi);
   document.querySelectorAll(".ltab").forEach(b=>b.classList.toggle("on",b.dataset.l===l));
-  const n=$("lnote");if(n)n.textContent=liveOnline?`Live leaderboard · ${list.length} player${list.length===1?"":"s"}`:"Offline: showing scores from this device only";
+  const n=$("lnote");if(n)n.textContent=liveOnline?`Live leaderboard · ${list.length} player${list.length===1?"":"s"}`:"Offline"+(dbErr?" ("+dbErr+")":"")+": showing scores from this device only";
 }
 function lbHtml(){return `<div class="row" style="margin-top:10px">${Object.keys(LV).map(l=>`<button class="lv ltab" data-l="${l}">${LN[l]}</button>`).join("")}</div><ol class="lb" id="lbl"></ol><p class="note" id="lnote"></p>`}
 function wireTabs(){document.querySelectorAll(".ltab").forEach(b=>b.onclick=()=>drawBoard(b.dataset.l))}
@@ -323,4 +327,5 @@ function paintTheme(){
   paintWho();
 }
 themeReady=true;paintTheme();
+syncMine();
 welcome();
