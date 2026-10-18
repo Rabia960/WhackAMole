@@ -5,7 +5,7 @@
 *{box-sizing:border-box}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
 body{margin:0;min-height:100vh;padding:16px;display:flex;align-items:center;justify-content:center;font-family:"Trebuchet MS",Arial,sans-serif;background:linear-gradient(135deg,var(--bg1),var(--bg2),var(--bg3));color:var(--ink)}
-.game{width:100%;max-width:480px;padding:22px;text-align:center;background:var(--card);border-radius:28px;box-shadow:0 12px 35px #b879a52b;position:relative}
+.game{width:100%;max-width:480px;padding:22px;text-align:center;background:var(--card);border-radius:28px;box-shadow:0 12px 35px var(--shadow,#b879a52b);position:relative}
 h1{color:var(--pink);margin:6px 0 2px;font-size:30px}
 .sub{color:var(--soft);margin:0 0 14px;font-size:14px}
 button{font-family:inherit;color:inherit}
@@ -19,7 +19,7 @@ button{font-family:inherit;color:inherit}
 .hole{aspect-ratio:1;min-width:0;padding:0;border:none;border-radius:50%;background:var(--hole);box-shadow:inset 0 -7px 0 var(--holeS);font-size:38px;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;transition:transform .12s}
 .hole:active{transform:scale(.92)}
 .hole svg{width:88%;height:88%;pointer-events:none}
-.hole.mole{background:#f8d8e8;box-shadow:inset 0 -5px 0 #e9b4d0;animation:pop .16s ease-out}
+.hole.mole{background:var(--mbg,#f8d8e8);box-shadow:inset 0 -5px 0 var(--msh,#e9b4d0);animation:pop .16s ease-out}
 .hole.golden{background:#fff3c4;box-shadow:inset 0 -5px 0 #f2d46b,0 0 14px #ffd966}
 .hole.hit{background:#fff0b8;box-shadow:inset 0 -5px 0 #f3d983;animation:wob .3s}
 .hole.miss{animation:shake .25s}
@@ -31,7 +31,7 @@ button{font-family:inherit;color:inherit}
 .btn:hover{filter:brightness(.93)}.btn:disabled{opacity:.55;cursor:not-allowed}
 .ghost{padding:8px 14px;border:2px solid var(--line);border-radius:20px;background:var(--card);color:var(--soft);font-size:13px;font-weight:700;cursor:pointer}
 .foot{display:flex;justify-content:center;gap:8px;margin-top:12px;flex-wrap:wrap}
-.ov{position:fixed;inset:0;z-index:10;display:flex;align-items:center;justify-content:center;padding:16px;background:#4a335899;overflow:auto}
+.ov{position:fixed;inset:0;z-index:10;display:flex;align-items:center;justify-content:center;padding:16px;background:var(--ovl,#4a335899);overflow:auto}
 .ov[hidden]{display:none}
 .modal{width:100%;max-width:420px;max-height:100%;overflow:auto;padding:22px;border-radius:24px;background:var(--card);text-align:center}
 .modal h2{margin:0 0 8px;color:var(--pink)}
@@ -46,3 +46,31 @@ input{width:100%;padding:12px;margin:8px 0 14px;border:2px solid var(--line);bor
 button:focus-visible,input:focus-visible{outline:3px solid var(--pink);outline-offset:2px}
 
 .story{margin:10px 0;padding:12px 14px;border-radius:16px;background:color-mix(in srgb,var(--pink) 12%,transparent);font-size:15px;line-height:1.55}
+
+/* Character picker */
+.chars{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:8px 0 12px}
+.chr{width:58px;padding:6px 2px 5px;border:2px solid var(--line);border-radius:16px;background:var(--card);color:var(--soft);font-size:11px;font-weight:700;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px}
+.chr svg{width:44px;height:44px;display:block}
+.chr.on{border-color:var(--pink);background:var(--chip);color:var(--ink)}
+
+/* Colour theme for each character: page, card, board, shadow and popup overlay (Tuli uses the defaults above) */
+:root[data-char=rocky]{--bg1:#fff0d6;--bg2:#ffe0bd;--bg3:#f3ead9;--card:#fffcf7;--ink:#6b4a2e;--soft:#a08466;--pink:#e07b1f;--btn:#f2a34f;--chip:#fff1de;--line:#f6d3a6;--mbg:#ffe6c7;--msh:#f2c690;--grass:#ead7bd;--hole:#9a7650;--holeS:#74583a;--shadow:#b5834a40;--ovl:#3d2a1699}
+:root[data-char=zap]{--bg1:#dcecff;--bg2:#d6f6f5;--bg3:#e9e6ff;--card:#fbfdff;--ink:#2d4666;--soft:#6f8db0;--pink:#2f7de1;--btn:#5b9cf0;--chip:#e6f1ff;--line:#bcd7f8;--mbg:#d8e8ff;--msh:#aac8f0;--grass:#cfe3f5;--hole:#6c8bb5;--holeS:#4d6a94;--shadow:#4f86e040;--ovl:#1c2a4a99}
+:root[data-char=rex]{--bg1:#dff5df;--bg2:#d5efe3;--bg3:#f5f2d4;--card:#fbfffb;--ink:#2f5a3d;--soft:#6f9a7c;--pink:#2e9e57;--btn:#5cc27d;--chip:#e3f6e8;--line:#b8e3c4;--mbg:#e3f7c9;--msh:#b5d98d;--grass:#d3ebb8;--hole:#8db356;--holeS:#6a9038;--shadow:#4db35f40;--ovl:#1f3d2799}
+:root[data-char=kuro]{--bg1:#e4e7ee;--bg2:#d9dde8;--bg3:#efe3e5;--card:#fbfbfd;--ink:#2f3547;--soft:#747c93;--pink:#d62839;--btn:#e85a66;--chip:#ffe9eb;--line:#f3bcc2;--mbg:#e3e5ee;--msh:#b8bccb;--grass:#d8dbe5;--hole:#8f95ab;--holeS:#6b7189;--shadow:#34415f40;--ovl:#1a1d2c99}
+:root[data-char=cheddar]{--bg1:#e4ecff;--bg2:#ffe3e6;--bg3:#fff4cf;--card:#fbfcff;--ink:#2b3a6b;--soft:#7a86b5;--pink:#e5484d;--btn:#f26a6f;--chip:#ffe9ea;--line:#f6bcc0;--mbg:#dfe8ff;--msh:#b4c6f2;--grass:#ccd6ee;--hole:#6371a0;--holeS:#48557f;--shadow:#e5484d33;--ovl:#1b265099}
+:root[data-char=owl]{--bg1:#e6e3f7;--bg2:#d9d4f0;--bg3:#f6efd0;--card:#fbfaff;--ink:#36316b;--soft:#7b76b4;--pink:#6c5ce7;--btn:#8b7df0;--chip:#ece9ff;--line:#cdc6f4;--mbg:#e1defa;--msh:#b9b2ea;--grass:#d3cdee;--hole:#7068b8;--holeS:#51499a;--shadow:#4b469a40;--ovl:#1a174099}
+@media(prefers-color-scheme:dark){
+:root[data-char=rocky]:not([data-theme=light]){--bg1:#261c10;--bg2:#2c2014;--bg3:#231b14;--card:#382a1a;--ink:#f6e2c8;--soft:#c9a982;--pink:#ffb35c;--btn:#c9791f;--chip:#4a3720;--line:#6a4e2c;--mbg:#5a4228;--msh:#3f2d1a;--grass:#3a2c20;--hole:#6a4e36;--holeS:#47331f;--shadow:#00000066;--ovl:#000000b0}
+:root[data-char=zap]:not([data-theme=light]){--bg1:#101c2c;--bg2:#122431;--bg3:#1a1a30;--card:#1e2d44;--ink:#d8e8fb;--soft:#8fb0d6;--pink:#6db3ff;--btn:#2f78d0;--chip:#263c5a;--line:#38557d;--mbg:#2c4a74;--msh:#1f3555;--grass:#1d3047;--hole:#3d5c80;--holeS:#28435f;--shadow:#00000066;--ovl:#000000b0}
+:root[data-char=rex]:not([data-theme=light]){--bg1:#12261a;--bg2:#152a24;--bg3:#222616;--card:#1f3526;--ink:#dcf3e2;--soft:#92c4a0;--pink:#6fe09a;--btn:#2e9e57;--chip:#284632;--line:#3a6a49;--mbg:#3d6a45;--msh:#2b4d32;--grass:#2c4422;--hole:#53773a;--holeS:#3a5628;--shadow:#00000066;--ovl:#000000b0}
+:root[data-char=kuro]:not([data-theme=light]){--bg1:#1a1c24;--bg2:#1e2030;--bg3:#2a1c20;--card:#272a38;--ink:#e8eaf2;--soft:#9aa0b8;--pink:#ff6b79;--btn:#c93a48;--chip:#3a2c34;--line:#5a3a44;--mbg:#44485c;--msh:#2f3244;--grass:#2a2d3a;--hole:#555b73;--holeS:#3b4054;--shadow:#00000066;--ovl:#000000b0}
+:root[data-char=cheddar]:not([data-theme=light]){--bg1:#121a33;--bg2:#251528;--bg3:#2a2415;--card:#1d2748;--ink:#e3e9ff;--soft:#93a0d6;--pink:#ff7a80;--btn:#d6454c;--chip:#2b3560;--line:#43508a;--mbg:#3a4a85;--msh:#27335c;--grass:#1f2a4a;--hole:#46558a;--holeS:#323f68;--shadow:#00000066;--ovl:#000000b0}
+:root[data-char=owl]:not([data-theme=light]){--bg1:#0f0e1f;--bg2:#17142b;--bg3:#1f1a22;--card:#1c1a35;--ink:#e6e3ff;--soft:#a39ee0;--pink:#ffcf4a;--btn:#7a68e6;--chip:#2b2850;--line:#433e7e;--mbg:#3b3670;--msh:#28254d;--grass:#1e1b3a;--hole:#3f3a86;--holeS:#2b2766;--shadow:#00000066;--ovl:#000000b0}
+}
+:root[data-theme=dark][data-char=rocky]{--bg1:#261c10;--bg2:#2c2014;--bg3:#231b14;--card:#382a1a;--ink:#f6e2c8;--soft:#c9a982;--pink:#ffb35c;--btn:#c9791f;--chip:#4a3720;--line:#6a4e2c;--mbg:#5a4228;--msh:#3f2d1a;--grass:#3a2c20;--hole:#6a4e36;--holeS:#47331f;--shadow:#00000066;--ovl:#000000b0}
+:root[data-theme=dark][data-char=zap]{--bg1:#101c2c;--bg2:#122431;--bg3:#1a1a30;--card:#1e2d44;--ink:#d8e8fb;--soft:#8fb0d6;--pink:#6db3ff;--btn:#2f78d0;--chip:#263c5a;--line:#38557d;--mbg:#2c4a74;--msh:#1f3555;--grass:#1d3047;--hole:#3d5c80;--holeS:#28435f;--shadow:#00000066;--ovl:#000000b0}
+:root[data-theme=dark][data-char=rex]{--bg1:#12261a;--bg2:#152a24;--bg3:#222616;--card:#1f3526;--ink:#dcf3e2;--soft:#92c4a0;--pink:#6fe09a;--btn:#2e9e57;--chip:#284632;--line:#3a6a49;--mbg:#3d6a45;--msh:#2b4d32;--grass:#2c4422;--hole:#53773a;--holeS:#3a5628;--shadow:#00000066;--ovl:#000000b0}
+:root[data-theme=dark][data-char=kuro]{--bg1:#1a1c24;--bg2:#1e2030;--bg3:#2a1c20;--card:#272a38;--ink:#e8eaf2;--soft:#9aa0b8;--pink:#ff6b79;--btn:#c93a48;--chip:#3a2c34;--line:#5a3a44;--mbg:#44485c;--msh:#2f3244;--grass:#2a2d3a;--hole:#555b73;--holeS:#3b4054;--shadow:#00000066;--ovl:#000000b0}
+:root[data-theme=dark][data-char=cheddar]{--bg1:#121a33;--bg2:#251528;--bg3:#2a2415;--card:#1d2748;--ink:#e3e9ff;--soft:#93a0d6;--pink:#ff7a80;--btn:#d6454c;--chip:#2b3560;--line:#43508a;--mbg:#3a4a85;--msh:#27335c;--grass:#1f2a4a;--hole:#46558a;--holeS:#323f68;--shadow:#00000066;--ovl:#000000b0}
+:root[data-theme=dark][data-char=owl]{--bg1:#0f0e1f;--bg2:#17142b;--bg3:#1f1a22;--card:#1c1a35;--ink:#e6e3ff;--soft:#a39ee0;--pink:#ffcf4a;--btn:#7a68e6;--chip:#2b2850;--line:#433e7e;--mbg:#3b3670;--msh:#28254d;--grass:#1e1b3a;--hole:#3f3a86;--holeS:#2b2766;--shadow:#00000066;--ovl:#000000b0}
