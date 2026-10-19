@@ -202,9 +202,17 @@ function saveScore(l,v){
 // Upload every best score saved on this device (covers scores made before Firebase was set up).
 function syncMine(){if(!db||!name)return;Object.keys(mine).forEach(l=>{if(mine[l]>0)saveScore(l,mine[l])})}
 function boardFor(l){
-  let list=rows.filter(r=>r.level===l&&r.name&&typeof r.best==="number");
-  if(!liveOnline){list=mine[l]?[{id:pid+"_"+l,name,level:l,best:mine[l]}]:[]}
-  return list.sort((a,b)=>b.best-a.best||(a.t||0)-(b.t||0));
+  let list=rows.filter(r=>(l==="all"||r.level===l)&&r.name&&typeof r.best==="number");
+  if(!liveOnline){list=Object.keys(mine).filter(k=>mine[k]&&(l==="all"||k===l)).map(k=>({id:pid+"_"+k,name,level:k,best:mine[k]}))}
+  list.sort((a,b)=>b.best-a.best||(a.t||0)-(b.t||0));
+  // Show each name only once (their best score), even if they played on several devices.
+  const seen={},out=[];
+  list.forEach(r=>{
+    const key=r.name.trim().toLowerCase(),isMine=r.id.indexOf(pid+"_")===0;
+    if(seen[key]){if(isMine)seen[key]._me=true;return}
+    const row={...r,_me:isMine};seen[key]=row;out.push(row);
+  });
+  return out;
 }
 
 /* Game */
@@ -297,22 +305,22 @@ function drawBoard(l){
   l=l||drawBoard.l||level;drawBoard.l=l;const el=$("lbl");if(!el)return;
   const list=boardFor(l);el.replaceChildren();
   if(!list.length){const li=document.createElement("li");li.textContent="No scores yet. Be the first! 🌸";el.appendChild(li)}
-  const add=(r,i)=>{const li=document.createElement("li");if(r.id===pid+"_"+l)li.className="me";
-    [["rk",i<3?["🥇","🥈","🥉"][i]:"#"+(i+1)],["nm",r.name],["sc",r.best]].forEach(([c,t])=>{const s=document.createElement("span");s.className=c;s.textContent=t;li.appendChild(s)});el.appendChild(li)};
-  list.slice(0,10).forEach(add);
-  const mi=list.findIndex(r=>r.id===pid+"_"+l);if(mi>=10)add(list[mi],mi);
+  const isMe=r=>r._me;
+  const add=(r,i)=>{const li=document.createElement("li");if(isMe(r))li.className="me";
+    [["rk",i<3?["🥇","🥈","🥉"][i]:"#"+(i+1)],["nm",l==="all"?r.name+" · "+(LNAME[r.level]||r.level):r.name],["sc",r.best]].forEach(([c,t])=>{const s=document.createElement("span");s.className=c;s.textContent=t;li.appendChild(s)});el.appendChild(li)};
+  list.forEach(add); // show every player (the list scrolls)
   document.querySelectorAll(".ltab").forEach(b=>b.classList.toggle("on",b.dataset.l===l));
   const n=$("lnote");if(n)n.textContent=liveOnline?`Live leaderboard · ${list.length} player${list.length===1?"":"s"}`:"Offline"+(dbErr?" ("+dbErr+")":"")+": showing scores from this device only";
 }
-function lbHtml(){return `<div class="row" style="margin-top:10px">${Object.keys(LV).map(l=>`<button class="lv ltab" data-l="${l}">${LN[l]}</button>`).join("")}</div><ol class="lb" id="lbl"></ol><p class="note" id="lnote"></p>`}
+function lbHtml(){return `<div class="row" style="margin-top:10px">${["all",...Object.keys(LV)].map(l=>`<button class="lv ltab" data-l="${l}">${l==="all"?"📋 All":LN[l]}</button>`).join("")}</div><ol class="lb" id="lbl"></ol><p class="note" id="lnote"></p>`}
 function wireTabs(){document.querySelectorAll(".ltab").forEach(b=>b.onclick=()=>drawBoard(b.dataset.l))}
 function results(rec){
-  view="lb";drawBoard.l=level;
+  view="lb";drawBoard.l="all";
   openOv(`<h2>Time’s up! 🎉</h2><p class="big">${score}</p><p class="note">${LN[level]} · ${rec?"New personal best! 🏆":"Best: "+(mine[level]||0)}</p>${ending()}${lbHtml()}
     <button class="btn" id="again">Play Again 🔄</button><div class="foot"><button class="ghost" id="chg">Change player</button></div>`);
-  wireTabs();drawBoard(level);$("again").onclick=start;$("chg").onclick=welcome;
+  wireTabs();drawBoard("all");$("again").onclick=start;$("chg").onclick=welcome;
 }
-$("top").onclick=()=>{view="lb";drawBoard.l=level;openOv(`<h2>🏆 Leaderboard</h2>${lbHtml()}<button class="btn" id="cl">Close</button>`);wireTabs();drawBoard(level);$("cl").onclick=closeOv};
+$("top").onclick=()=>{view="lb";drawBoard.l="all";openOv(`<h2>🏆 Leaderboard</h2>${lbHtml()}<button class="btn" id="cl">Close</button>`);wireTabs();drawBoard("all");$("cl").onclick=closeOv};
 $("help").onclick=()=>{view="";openOv(`<h2>How to play 🌷</h2>${how()}<button class="btn" id="cl">Got it</button>`);$("cl").onclick=closeOv};
 
 $("story").onclick=()=>intro(0,null);
