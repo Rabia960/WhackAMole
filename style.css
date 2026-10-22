@@ -6,7 +6,7 @@
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
 body{margin:0;min-height:100vh;padding:16px;display:flex;align-items:center;justify-content:center;font-family:"Trebuchet MS",Arial,sans-serif;background:linear-gradient(135deg,var(--bg1),var(--bg2),var(--bg3));color:var(--ink)}
 .game{width:100%;max-width:480px;padding:22px;text-align:center;background:var(--card);border-radius:28px;box-shadow:0 12px 35px var(--shadow,#b879a52b);position:relative}
-h1{color:var(--pink);margin:6px 0 2px;font-size:30px}
+h1{color:var(--pink);margin:6px 0 2px;font-size:clamp(22px,7vw,30px)}
 .sub{color:var(--soft);margin:0 0 14px;font-size:14px}
 button{font-family:inherit;color:inherit}
 .row{display:flex;gap:8px;margin-bottom:12px}
@@ -37,7 +37,7 @@ button{font-family:inherit;color:inherit}
 .modal h2{margin:0 0 8px;color:var(--pink)}
 .modal ul{text-align:left;margin:10px 0;padding-left:22px;font-size:14px;line-height:1.55}
 input{width:100%;padding:12px;margin:8px 0 14px;border:2px solid var(--line);border-radius:14px;background:var(--card);color:var(--ink);font:inherit;font-size:16px;text-align:center}
-.lb{list-style:none;margin:8px 0 14px;padding:0;text-align:left;max-height:42vh;overflow-y:auto}
+.lb{list-style:none;margin:8px 0 14px;padding:0;text-align:left}
 .lb li{display:flex;gap:8px;align-items:center;padding:8px 10px;margin-bottom:5px;border-radius:12px;background:var(--chip);font-size:14px}
 .lb li.me{outline:2px solid var(--pink)}
 .lb .rk{width:28px;font-weight:700}.lb .nm{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.lb .sc{font-weight:700;color:var(--pink)}

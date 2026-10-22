@@ -182,9 +182,9 @@ const S={
 /* Shared online leaderboard.
    Order of preference: Firebase (when firebase-config.js is filled in),
    then the claude.ai page database, then this device only. */
-let db=null,rows=[],liveOnline=false,dbErr="";
+let db=null,rows=[],liveOnline=false;
 function onRows(snap){rows=snap.docs.map(d=>({id:d.id,...d.data()}));liveOnline=true;if(!$("ov").hidden&&view==="lb")drawBoard()}
-function listen(q){q.onSnapshot(onRows,e=>{liveOnline=false;dbErr=(e&&e.code)||"error";console.error("Firestore read failed:",e)})}
+function listen(q){q.onSnapshot(onRows,()=>{liveOnline=false})}
 const FB=window.FIREBASE_CONFIG;
 if(window.firebase&&FB&&FB.projectId){
   try{
@@ -196,23 +196,12 @@ if(window.firebase&&FB&&FB.projectId){
 }
 function saveScore(l,v){
   if(!db)return;
-  db.collection("scores").doc(pid+"_"+l).set({name,level:l,best:v,t:Date.now()})
-    .catch(e=>{dbErr=(e&&e.code)||"error";console.error("Firestore save failed:",e)});
+  db.collection("scores").doc(pid+"_"+l).set({name,level:l,best:v,t:Date.now()}).catch(()=>{});
 }
-// Upload every best score saved on this device (covers scores made before Firebase was set up).
-function syncMine(){if(!db||!name)return;Object.keys(mine).forEach(l=>{if(mine[l]>0)saveScore(l,mine[l])})}
 function boardFor(l){
-  let list=rows.filter(r=>(l==="all"||r.level===l)&&r.name&&typeof r.best==="number");
-  if(!liveOnline){list=Object.keys(mine).filter(k=>mine[k]&&(l==="all"||k===l)).map(k=>({id:pid+"_"+k,name,level:k,best:mine[k]}))}
-  list.sort((a,b)=>b.best-a.best||(a.t||0)-(b.t||0));
-  // Show each name only once (their best score), even if they played on several devices.
-  const seen={},out=[];
-  list.forEach(r=>{
-    const key=r.name.trim().toLowerCase(),isMine=r.id.indexOf(pid+"_")===0;
-    if(seen[key]){if(isMine)seen[key]._me=true;return}
-    const row={...r,_me:isMine};seen[key]=row;out.push(row);
-  });
-  return out;
+  let list=rows.filter(r=>r.level===l&&r.name&&typeof r.best==="number");
+  if(!liveOnline){list=mine[l]?[{id:pid+"_"+l,name,level:l,best:mine[l]}]:[]}
+  return list.sort((a,b)=>b.best-a.best||(a.t||0)-(b.t||0));
 }
 
 /* Game */
@@ -247,8 +236,7 @@ function begin(){
 function end(){
   playing=false;clearTimeout(mt);clearInterval(cd);reset();cur=-1;S.end();
   const rec=score>0&&score>(mine[level]||0);
-  if(rec){mine[level]=score;ls.set("wm_best",JSON.stringify(mine));S.record()}
-  if(mine[level])saveScore(level,mine[level]);
+  if(rec){mine[level]=score;ls.set("wm_best",JSON.stringify(mine));saveScore(level,score);S.record()}
   msg.textContent=`Time’s up! ${score} points 🎉`;go.textContent="Play Again 🔄";lock(false);refreshStats();
   results(rec);
 }
@@ -297,7 +285,7 @@ function welcome(){
   const i=$("nm");i.value=name;i.focus();
   document.querySelectorAll(".chr").forEach(b=>b.onclick=()=>{audio();setChar(b.dataset.c);document.querySelectorAll(".chr").forEach(x=>x.classList.toggle("on",x===b));$("meet").textContent="Meet "+CH[ch].full;S.pop()});
   const ok=()=>{const v=i.value.trim().replace(/\s+/g," ").slice(0,14);if(!v){i.focus();return}
-    name=v;ls.set("wm_name",name);syncMine();paintWho();closeOv();if(!ls.get("wm_story",""))intro(0,null);
+    name=v;ls.set("wm_name",name);paintWho();closeOv();if(!ls.get("wm_story",""))intro(0,null);
     msg.textContent=`Hi ${name}! Press Start 🌼`};
   $("ok").onclick=()=>{audio();ok()};i.onkeydown=e=>{if(e.key==="Enter")ok()};
 }
@@ -305,22 +293,22 @@ function drawBoard(l){
   l=l||drawBoard.l||level;drawBoard.l=l;const el=$("lbl");if(!el)return;
   const list=boardFor(l);el.replaceChildren();
   if(!list.length){const li=document.createElement("li");li.textContent="No scores yet. Be the first! 🌸";el.appendChild(li)}
-  const isMe=r=>r._me;
-  const add=(r,i)=>{const li=document.createElement("li");if(isMe(r))li.className="me";
-    [["rk",i<3?["🥇","🥈","🥉"][i]:"#"+(i+1)],["nm",l==="all"?r.name+" · "+(LNAME[r.level]||r.level):r.name],["sc",r.best]].forEach(([c,t])=>{const s=document.createElement("span");s.className=c;s.textContent=t;li.appendChild(s)});el.appendChild(li)};
-  list.forEach(add); // show every player (the list scrolls)
+  const add=(r,i)=>{const li=document.createElement("li");if(r.id===pid+"_"+l)li.className="me";
+    [["rk",i<3?["🥇","🥈","🥉"][i]:"#"+(i+1)],["nm",r.name],["sc",r.best]].forEach(([c,t])=>{const s=document.createElement("span");s.className=c;s.textContent=t;li.appendChild(s)});el.appendChild(li)};
+  list.slice(0,10).forEach(add);
+  const mi=list.findIndex(r=>r.id===pid+"_"+l);if(mi>=10)add(list[mi],mi);
   document.querySelectorAll(".ltab").forEach(b=>b.classList.toggle("on",b.dataset.l===l));
-  const n=$("lnote");if(n)n.textContent=liveOnline?`Live leaderboard · ${list.length} player${list.length===1?"":"s"}`:"Offline"+(dbErr?" ("+dbErr+")":"")+": showing scores from this device only";
+  const n=$("lnote");if(n)n.textContent=liveOnline?`Live leaderboard · ${list.length} player${list.length===1?"":"s"}`:"Offline: showing scores from this device only";
 }
-function lbHtml(){return `<div class="row" style="margin-top:10px">${["all",...Object.keys(LV)].map(l=>`<button class="lv ltab" data-l="${l}">${l==="all"?"📋 All":LN[l]}</button>`).join("")}</div><ol class="lb" id="lbl"></ol><p class="note" id="lnote"></p>`}
+function lbHtml(){return `<div class="row" style="margin-top:10px">${Object.keys(LV).map(l=>`<button class="lv ltab" data-l="${l}">${LN[l]}</button>`).join("")}</div><ol class="lb" id="lbl"></ol><p class="note" id="lnote"></p>`}
 function wireTabs(){document.querySelectorAll(".ltab").forEach(b=>b.onclick=()=>drawBoard(b.dataset.l))}
 function results(rec){
-  view="lb";drawBoard.l="all";
+  view="lb";drawBoard.l=level;
   openOv(`<h2>Time’s up! 🎉</h2><p class="big">${score}</p><p class="note">${LN[level]} · ${rec?"New personal best! 🏆":"Best: "+(mine[level]||0)}</p>${ending()}${lbHtml()}
     <button class="btn" id="again">Play Again 🔄</button><div class="foot"><button class="ghost" id="chg">Change player</button></div>`);
-  wireTabs();drawBoard("all");$("again").onclick=start;$("chg").onclick=welcome;
+  wireTabs();drawBoard(level);$("again").onclick=start;$("chg").onclick=welcome;
 }
-$("top").onclick=()=>{view="lb";drawBoard.l="all";openOv(`<h2>🏆 Leaderboard</h2>${lbHtml()}<button class="btn" id="cl">Close</button>`);wireTabs();drawBoard("all");$("cl").onclick=closeOv};
+$("top").onclick=()=>{view="lb";drawBoard.l=level;openOv(`<h2>🏆 Leaderboard</h2>${lbHtml()}<button class="btn" id="cl">Close</button>`);wireTabs();drawBoard(level);$("cl").onclick=closeOv};
 $("help").onclick=()=>{view="";openOv(`<h2>How to play 🌷</h2>${how()}<button class="btn" id="cl">Got it</button>`);$("cl").onclick=closeOv};
 
 $("story").onclick=()=>intro(0,null);
@@ -333,7 +321,15 @@ function paintTheme(){
   document.querySelectorAll("#lvls .lv").forEach(b=>b.textContent=LN[b.dataset.l]);
   if(!playing)reset();
   paintWho();
+  const tc=document.querySelector("meta[name=theme-color]");
+  if(tc)tc.content=getComputedStyle(document.documentElement).getPropertyValue("--bg1").trim()||"#ffc2dc";
 }
 themeReady=true;paintTheme();
-syncMine();
 welcome();
+
+/* Install as an app (Chrome and Android show the button; on iPhone use Share > Add to Home Screen) */
+let installEvt=null;
+window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();installEvt=e;$("inst").hidden=false});
+window.addEventListener("appinstalled",()=>{installEvt=null;$("inst").hidden=true});
+$("inst").onclick=async()=>{if(!installEvt)return;installEvt.prompt();try{await installEvt.userChoice}catch(e){}installEvt=null;$("inst").hidden=true};
+if("serviceWorker" in navigator&&location.protocol.startsWith("http"))window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));

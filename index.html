@@ -3,13 +3,22 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Whack-a-Mole 🌷</title>
+<title>Tuli’s Whack-a-Thon 🌷</title>
 <link rel="stylesheet" href="style.css">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#ffc2dc">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Whack-a-Thon">
+<meta name="description" content="Seven heroes, seven stories. A mole-tapping adventure with funny stories and a new look for every character.">
 </head>
 <body>
 <main class="game">
   <div id="deco">🌸 🌷 🌸</div>
-  <h1>Whack-a-Mole!</h1>
+  <h1>Tuli’s Whack-a-Thon!</h1>
   <p class="sub" id="who">Catch the little moles! ♡</p>
   <div class="row" id="lvls">
     <button class="lv on" data-l="easy">🌼 Easy</button>
@@ -20,7 +29,7 @@
   <div class="board" id="board"></div>
   <p id="msg" aria-live="polite">Ready to play? 🌼</p>
   <button class="btn" id="go">Start Game 🎀</button>
-  <div class="foot"><button class="ghost" id="story">📖 Story</button><button class="ghost" id="help">❓ How to play</button><button class="ghost" id="top">🏆 Leaderboard</button><button class="ghost" id="snd">🔊 Sound on</button></div>
+  <div class="foot"><button class="ghost" id="story">📖 Story</button><button class="ghost" id="help">❓ How to play</button><button class="ghost" id="top">🏆 Leaderboard</button><button class="ghost" id="inst" hidden>📲 Install app</button><button class="ghost" id="snd">🔊 Sound on</button></div>
 </main>
 <div class="ov" id="ov" hidden><div class="modal" id="md"></div></div>
 

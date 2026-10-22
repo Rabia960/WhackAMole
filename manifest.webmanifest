@@ -1,0 +1,31 @@
+{
+  "name": "Tuli’s Whack-a-Thon",
+  "short_name": "Whack-a-Thon",
+  "description": "Seven heroes, seven stories. A mole-tapping adventure with funny stories and a new look for every character.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#ffe0eb",
+  "theme_color": "#ffc2dc",
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
