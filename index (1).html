@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tuli’s Whack-a-Thon 🌷</title>
+<link rel="stylesheet" href="style.css">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#ffc2dc">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Whack-a-Thon">
+<meta name="description" content="Seven heroes, seven stories. A mole-tapping adventure with funny stories and a new look for every character.">
+</head>
+<body>
+<main class="game">
+  <div id="deco">🌸 🌷 🌸</div>
+  <h1>Tuli’s Whack-a-Thon!</h1>
+  <p class="sub" id="who">Catch the little moles! ♡</p>
+  <div class="row" id="lvls">
+    <button class="lv on" data-l="easy">🌼 Easy</button>
+    <button class="lv" data-l="medium">🌷 Medium</button>
+    <button class="lv" data-l="hard">🔥 Hard</button>
+  </div>
+  <div class="row stats"><div>⭐ Score<span id="sc">0</span></div><div>⏰ Time<span id="tm">30</span></div><div>🏆 My best<span id="bs">0</span></div></div>
+  <div class="board" id="board"></div>
+  <p id="msg" aria-live="polite">Ready to play? 🌼</p>
+  <button class="btn" id="go">Start Game 🎀</button>
+  <div class="foot"><button class="ghost" id="story">📖 Story</button><button class="ghost" id="help">❓ How to play</button><button class="ghost" id="top">🏆 Leaderboard</button><button class="ghost" id="inst" hidden>📲 Install app</button><button class="ghost" id="snd">🔊 Sound on</button></div>
+</main>
+<div class="ov" id="ov" hidden><div class="modal" id="md"></div></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
