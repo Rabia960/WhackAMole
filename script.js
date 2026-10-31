@@ -228,7 +228,7 @@ const board=$("board"),msg=$("msg"),go=$("go");
 let HOLE="🌱";
 for(let i=0;i<9;i++){const b=document.createElement("button");b.className="hole";b.textContent=HOLE;b.setAttribute("aria-label","Hole "+(i+1));board.appendChild(b)}
 const holes=[...board.children];
-let score=0,left=GAME,cur=-1,curG=false,playing=false,t0=0,mt,cd,streak=0;
+let score=0,left=GAME,cur=-1,curG=false,playing=false,t0=0,mt,cd,streak=0,paused=false,pAt=0;
 
 function reset(){holes.forEach(h=>{h.className="hole";h.textContent=HOLE})}
 function speed(){const[a,z]=LV[level],p=Math.min((Date.now()-t0)/(GAME*1000),1);return a-(a-z)*p}
@@ -248,19 +248,39 @@ function start(){
   begin();
 }
 function begin(){
-  if(playing)return;closeOv();score=0;left=GAME;cur=-1;curG=false;streak=0;playing=true;t0=Date.now();
-  msg.textContent="Quick! Catch the mole! 💕";go.textContent="Playing... 🌸";lock(true);refreshStats();S.start();show();next();
-  cd=setInterval(()=>{left--;$("tm").textContent=left;if(left>0&&left<=3)S.tick();if(left<=0)end()},1000);
+  if(playing)return;closeOv();score=0;left=GAME;cur=-1;curG=false;streak=0;playing=true;paused=false;t0=Date.now();
+  msg.textContent="Quick! Catch the mole! 💕";go.textContent="Playing... 🌸";lock(true);refreshStats();S.start();show();next();paintCtl();
+  cd=setInterval(tickSecond,1000);
 }
 function end(){
   playing=false;clearTimeout(mt);clearInterval(cd);reset();cur=-1;S.end();
   const rec=score>0&&score>(mine[level]||0);
   if(rec){mine[level]=score;ls.set("wm_best",JSON.stringify(mine));saveScore(level,score);S.record()}
-  msg.textContent=`Time’s up! ${score} points 🎉`;go.textContent="Play Again 🔄";lock(false);refreshStats();
+  msg.textContent=`Time’s up! ${score} points 🎉`;go.textContent="Play Again 🔄";lock(false);refreshStats();paused=false;board.classList.remove("paused");paintCtl();
   results(rec);
 }
-holes.forEach((h,i)=>h.addEventListener("click",()=>{
+/* Pause, resume and reset */
+function tickSecond(){left--;$("tm").textContent=left;if(left>0&&left<=3)S.tick();if(left<=0)end()}
+function paintCtl(){const p=$("pz"),r=$("rs");p.disabled=!playing;r.disabled=!playing;p.textContent=paused?"▶️ Resume":"⏸ Pause";board.classList.toggle("paused",paused)}
+function pause(){
+  if(!playing||paused)return;paused=true;pAt=Date.now();
+  clearTimeout(mt);clearInterval(cd);reset();cur=-1;curG=false;
+  msg.textContent="Paused ⏸ Press Resume when you’re ready";go.textContent="Paused ⏸";paintCtl();
+}
+function resume(){
+  if(!playing||!paused)return;paused=false;t0+=Date.now()-pAt;
+  msg.textContent=`Back to it! ${STORY[ch].icon}`;go.textContent="Playing... 🌸";
+  paintCtl();show();next();cd=setInterval(tickSecond,1000);
+}
+function resetGame(){
   if(!playing)return;
+  clearTimeout(mt);clearInterval(cd);playing=false;paused=false;
+  reset();cur=-1;curG=false;streak=0;score=0;left=GAME;
+  msg.textContent="Game reset 🔄 Press Start when you’re ready!";go.textContent="Start Game 🎀";
+  lock(false);refreshStats();paintCtl();
+}
+holes.forEach((h,i)=>h.addEventListener("click",()=>{
+  if(!playing||paused)return;
   if(i===cur){
     const g=curG;score+=g?GOLD_PTS:1;streak++;$("sc").textContent=score;
     msg.textContent=g?`Golden mole! +${GOLD_PTS} ⭐✨`:`Yay! You caught one! ${STORY[ch].icon}`;
@@ -276,6 +296,16 @@ document.querySelectorAll(".lv").forEach(b=>b.addEventListener("click",()=>{
 }));
 function paintLv(){document.querySelectorAll("#lvls .lv").forEach(b=>b.classList.toggle("on",b.dataset.l===level))}
 go.addEventListener("click",()=>{audio();start()});
+$("pz").addEventListener("click",()=>{audio();paused?resume():pause()});
+$("rs").addEventListener("click",()=>{
+  if(!playing)return;const was=paused;pause();
+  openOv(`<h2>Reset the game? 🔄</h2><p class="story">Your score so far (${score}) won’t be saved.</p><button class="btn" id="yes">Yes, reset</button><div class="foot"><button class="ghost" id="no">Keep playing</button></div>`);
+  $("yes").onclick=()=>{resetGame();closeOv()};
+  $("no").onclick=()=>{closeOv();if(!was)resume()};
+});
+document.addEventListener("keydown",e=>{if((e.key==="p"||e.key==="P")&&playing&&!["INPUT","TEXTAREA"].includes(e.target.tagName)&&$("ov").hidden)paused?resume():pause()});
+document.addEventListener("visibilitychange",()=>{if(document.hidden)pause()});
+paintCtl();
 $("snd").addEventListener("click",()=>{soundOn=!soundOn;$("snd").textContent=soundOn?"🔊 Sound on":"🔇 Sound off";ls.set("wm_sound",soundOn?"on":"off");if(soundOn)S.hit(1)});
 
 /* Popups: instructions + name, results + leaderboard */
