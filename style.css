@@ -37,7 +37,7 @@ button{font-family:inherit;color:inherit}
 .modal h2{margin:0 0 8px;color:var(--pink)}
 .modal ul{text-align:left;margin:10px 0;padding-left:22px;font-size:14px;line-height:1.55}
 input{width:100%;padding:12px;margin:8px 0 14px;border:2px solid var(--line);border-radius:14px;background:var(--card);color:var(--ink);font:inherit;font-size:16px;text-align:center}
-.lb{list-style:none;margin:8px 0 14px;padding:0;text-align:left}
+.lb{list-style:none;margin:8px 0 14px;padding:0 2px 0 0;text-align:left;max-height:min(44vh,330px);overflow-y:auto}
 .lb li{display:flex;gap:8px;align-items:center;padding:8px 10px;margin-bottom:5px;border-radius:12px;background:var(--chip);font-size:14px}
 .lb li.me{outline:2px solid var(--pink)}
 .lb .rk{width:28px;font-weight:700}.lb .nm{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.lb .sc{font-weight:700;color:var(--pink)}
@@ -74,3 +74,9 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--pink);outline-o
 :root[data-theme=dark][data-char=kuro]{--bg1:#1a1c24;--bg2:#1e2030;--bg3:#2a1c20;--card:#272a38;--ink:#e8eaf2;--soft:#9aa0b8;--pink:#ff6b79;--btn:#c93a48;--chip:#3a2c34;--line:#5a3a44;--mbg:#44485c;--msh:#2f3244;--grass:#2a2d3a;--hole:#555b73;--holeS:#3b4054;--shadow:#00000066;--ovl:#000000b0}
 :root[data-theme=dark][data-char=cheddar]{--bg1:#121a33;--bg2:#251528;--bg3:#2a2415;--card:#1d2748;--ink:#e3e9ff;--soft:#93a0d6;--pink:#ff7a80;--btn:#d6454c;--chip:#2b3560;--line:#43508a;--mbg:#3a4a85;--msh:#27335c;--grass:#1f2a4a;--hole:#46558a;--holeS:#323f68;--shadow:#00000066;--ovl:#000000b0}
 :root[data-theme=dark][data-char=owl]{--bg1:#0f0e1f;--bg2:#17142b;--bg3:#1f1a22;--card:#1c1a35;--ink:#e6e3ff;--soft:#a39ee0;--pink:#ffcf4a;--btn:#7a68e6;--chip:#2b2850;--line:#433e7e;--mbg:#3b3670;--msh:#28254d;--grass:#1e1b3a;--hole:#3f3a86;--holeS:#2b2766;--shadow:#00000066;--ovl:#000000b0}
+
+/* Leaderboard: every player, with Easy / Medium / Hard columns on the All tab */
+.lb .c{width:42px;text-align:right;font-weight:700;color:var(--pink)}
+.lb li.hd{position:sticky;top:0;z-index:1;background:var(--card);border-radius:0;font-size:12px;font-weight:700;color:var(--soft);padding:2px 10px 6px;margin-bottom:2px}
+.lb li.hd .c{color:var(--soft)}
+.row .ltab{padding-left:4px;padding-right:4px;font-size:13px}
