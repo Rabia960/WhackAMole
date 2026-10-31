@@ -53,6 +53,3 @@ Golden mole chance and points: GOLD_P and GOLD_PTS
 
 Tuli the Tulip Mole is an original character.
 
-📄 Licence
-
-Add a licence if you'd like others to reuse the code (the MIT licence is a common choice). Until then, all rights ar
