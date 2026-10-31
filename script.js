@@ -1,4 +1,3 @@
-   
 const $=id=>document.getElementById(id);
 const GAME=30, GOLD_P=.15, GOLD_PTS=5;
 const LV={easy:[1400,800],medium:[1100,550],hard:[850,380]};
@@ -61,6 +60,15 @@ const STORY={
     res:["Almost there…", "Cheddar City is saved! 🎉", "Super Sidekick! 🏆"],
     end:{"easy": ["The Squad grabbed some cheese, but {hero} is already on it (right after rescuing the cape from a door). Try again! 🧀", "You cleared the Rooftops, and the city cheers (and one pigeon claps). Chapter 2 awaits on Medium. 🏙️", "Perfect! No cheese lost, and {hero} gives you a gold star badge. It’s sticky, so be careful. 🏅"], "medium": ["The Squad swapped a few street signs, so now the library is called “Pizza Palace”. {hero} believes in you, so try again! 🚦", "Downtown is safe, and the traffic lights are boring again! The Cheese Vault awaits on Hard. 🧀", "Amazing! Downtown is back to normal, and the pranksters ran off shouting “Worth it!” 🌈"], "hard": ["Doctor Mouldy got away with a slice of the Great Cheese Wheel. {hero} says the city still needs you, so try again! 🧀", "You beat Doctor Mouldy’s Prank Squad, and the cheese is saved! The Doctor was last seen sulking in a cheese cave. 🌆", "LEGENDARY! Doctor Mouldy flies off screaming “Curse you, sidekick!”, the cheese is safe, and {hero} names you Super Sidekick of Cheddar City! 👑🦸"]}
   },
+  jack:{
+    icon:"🎃",
+    title:"Jack and the Great Candy Caper",
+    intro:["{full} is the star of Spookville and guards the Big Bucket of Candy every Halloween. {hero} says it’s a very serious job. Mostly it’s the job of not eating it. 🎃", "But tonight, a gang of cheeky pumpkin-moles pops out of the patch and starts swiping the sweets. One of them is dressed as a ghost. It’s just a bedsheet with two holes. 👻", "{hero} can’t catch them all alone (it’s hard to chase anyone when you’re shaped like a pumpkin). Will you help save Halloween? 🍬"],
+    chap:{"easy": {"t": "Chapter 1 · The Spooky Street 🏘️", "x": "The candy thieves are new at this, and one is carrying a bucket with a hole in it. Tap them before they take the sweets!"}, "medium": {"t": "Chapter 2 · The Haunted Mansion 🏚️", "x": "The thieves are faster in the dark, but the creaky floors keep giving them away. The ghost in the corner is only pretending to be scared. Don’t let them reach the pantry!"}, "hard": {"t": "Chapter 3 · The Midnight Graveyard 💀", "x": "This is the final showdown! The Candy King and his gang are partying among the headstones with a stolen mountain of sweets. Save Halloween before the clock strikes midnight!"}},
+    gold:"✨ Watch out for golden moles. Each one is clutching a giant golden lollipop and cackling. Worth +5 points!",
+    res:["Almost there…", "Halloween is saved! 🎉", "Spookville Hero! 🏆"],
+    end:{"easy": ["The thieves got away with a few sweets, and one of them was an actual raisin. {hero} wants a rematch. Try again! 🍬", "You cleared the Spooky Street, and the candy is safe! {hero} did a very spooky dance. The Haunted Mansion is next on Medium. 🏚️", "Perfect! Not one sweet lost, and {hero} gives you a golden pumpkin badge. It’s a bit squishy. 🏅"], "medium": ["The thieves hid candy inside the mansion walls, and now nobody can find it. {hero} believes in you, so try again! 🕯️", "The Haunted Mansion is clear, and the ghost has finally stopped pretending! The Midnight Graveyard awaits on Hard. 💀", "Amazing! Every sweet is back, and the thieves ran off screaming “We’ll be back next year!” 🎃"], "hard": ["The Candy King got away with a bag of sweets and a very dramatic cackle. {hero} says Spookville still needs you, so try again! 🍬", "You beat the Candy King’s gang, and Halloween is saved! The King was last seen booking a dentist appointment. 🌙", "LEGENDARY! The Candy King runs off with a tummy ache, every sweet is back, and {hero} crowns you Hero of Spookville! 👑🎃"]}
+  },
   owl:{
     icon:"🦉",
     title:"Hoot and the Great Sock Heist",
@@ -89,7 +97,7 @@ function mole(gold,hit){
 /* More characters, all drawn in code. They share the same face helpers. */
 const INK="#4a3358";
 function eyes(hit,y,c){c=c||INK;return hit?`<path d="M30 ${y-5}l10 10M40 ${y-5}L30 ${y+5}M60 ${y-5}l10 10M70 ${y-5}L60 ${y+5}" stroke="${c}" stroke-width="3" stroke-linecap="round"/>`
-  :`<circle cx="35" cy="${y}" r= "4.5" fill="${c}"/><circle cx="65" cy="${y}" r="4.5" fill="${c}"/><circle cx="36.6" cy="${y-1.6}" r="1.6" fill="#fff"/><circle cx="66.6" cy="${y-1.6}" r="1.6" fill="#fff"/>`}
+  :`<circle cx="35" cy="${y}" r="4.5" fill="${c}"/><circle cx="65" cy="${y}" r="4.5" fill="${c}"/><circle cx="36.6" cy="${y-1.6}" r="1.6" fill="#fff"/><circle cx="66.6" cy="${y-1.6}" r="1.6" fill="#fff"/>`}
 function smile(hit,y,c){c=c||INK;return hit?`<ellipse cx="50" cy="${y}" rx="4" ry="3" fill="${c}"/>`
   :`<path d="M42 ${y}q8 7 16 0" stroke="${c}" stroke-width="2.4" fill="none" stroke-linecap="round"/>`}
 function sparks(gold,hit){return hit?`<path transform="translate(17 20)" d="${STAR}" fill="#ffd966"/><path transform="translate(85 26) scale(.8)" d="${STAR}" fill="#ffd966"/>`
@@ -126,6 +134,15 @@ function owl(gold,hit){
   const b=gold?"#ffd966":"#4b469a",d=gold?"#f2b84b":"#2f2b6b",s=gold?"#fff6dc":"#8f89dd",ring=gold?"#fff6dc":"#ffe27a";
   return wrap(`<path d="M16 54Q0 76 10 95L38 84Z" fill="${d}"/><path d="M84 54Q100 76 90 95L62 84Z" fill="${d}"/><path d="M24 42L20 15L44 33ZM76 42L80 15L56 33Z" fill="${d}"/><ellipse cx="50" cy="64" rx="35" ry="31" fill="${b}"/><ellipse cx="50" cy="79" rx="20" ry="13" fill="${s}"/><path d="M42 74l3 4 3-4M52 74l3 4 3-4M47 82l3 4 3-4" stroke="${b}" stroke-width="1.6" fill="none" stroke-linecap="round"/><circle cx="35" cy="52" r="12" fill="${ring}"/><circle cx="65" cy="52" r="12" fill="${ring}"/>${eyes(hit,52,"#2a2650")}<path d="M45 60L55 60L50 70Z" fill="#ff9f1c"/>`,gold,hit);
 }
+/* Jack the Pumpkin Mole (Halloween special): jack-o'-lantern face with a glowing carved smile */
+function jack(gold,hit){
+  const b=gold?"#ffd966":"#ff8a1f",d=gold?"#e8b53a":"#e56f00",g=gold?"#fffbe0":"#ffe066",st="#5a8f3d";
+  const eyesJ=hit?`<path d="M30 46l12 12M42 46L30 58M58 46l12 12M70 46L58 58" stroke="${g}" stroke-width="4" stroke-linecap="round"/>`
+    :`<path d="M27 56L41 56L34 42ZM59 56L73 56L66 42Z" fill="${g}" stroke="${d}" stroke-width="1.5" stroke-linejoin="round"/>`;
+  const mouth=hit?`<ellipse cx="50" cy="75" rx="7" ry="6" fill="${g}"/>`
+    :`<path d="M28 68L36 74L43 68L50 75L57 68L64 74L72 68L70 80Q50 90 30 80Z" fill="${g}" stroke="${d}" stroke-width="1.5" stroke-linejoin="round"/>`;
+  return wrap(`<path d="M47 36Q47 21 58 16L62 23Q55 26 54 36Z" fill="${st}"/><path d="M58 17Q68 13 73 22" stroke="${st}" stroke-width="3" fill="none" stroke-linecap="round"/><ellipse cx="50" cy="64" rx="35" ry="31" fill="${b}"/><ellipse cx="50" cy="64" rx="15" ry="31" fill="none" stroke="${d}" stroke-width="2.5" opacity=".6"/><ellipse cx="50" cy="64" rx="27" ry="30" fill="none" stroke="${d}" stroke-width="2.5" opacity=".45"/>${eyesJ}<path d="M48 61L52 61L50 66Z" fill="${g}"/>${mouth}`,gold,hit);
+}
 const ART={};
 
 /* Safe storage (can be blocked in private mode) */
@@ -144,7 +161,8 @@ const CH={
   rex:{name:"Rex",full:"Rex the Dino Mole",draw:rex,deco:"🌴 🦖 🌴",hole:"🥚",tag:"Save the eggs! 🥚"},
   kuro:{name:"Kuro",full:"Kuro the Ninja Mole",draw:kuro,deco:"🎋 🥷 🎋",hole:"🎋",tag:"Catch the shadow clones! 🥷"},
   cheddar:{name:"Cheddar",full:"Captain Cheddar the Hero Mole",draw:cheddar,deco:"⭐ 🦸 ⭐",hole:"🧀",tag:"Stop the Prank Squad! 🦸"},
-  owl:{name:"Hoot",full:"Hoot the Midnight Owl Mole",draw:owl,deco:"🌙 🦉 🌙",hole:"🧦",tag:"Catch the sock thieves! 🧦"}
+  owl:{name:"Hoot",full:"Hoot the Midnight Owl Mole",draw:owl,deco:"🌙 🦉 🌙",hole:"🧦",tag:"Catch the sock thieves! 🧦"},
+  jack:{name:"Jack",full:"Jack the Pumpkin Mole",draw:jack,deco:"🎃 👻 🎃",hole:"🍬",tag:"Save the candy! 🍬"}
 };
 let themeReady=false;
 let ch=ls.get("wm_char","tuli");if(!CH[ch])ch="tuli";
@@ -359,4 +377,3 @@ window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();installEvt=
 window.addEventListener("appinstalled",()=>{installEvt=null;$("inst").hidden=true});
 $("inst").onclick=async()=>{if(!installEvt)return;installEvt.prompt();try{await installEvt.userChoice}catch(e){}installEvt=null;$("inst").hidden=true};
 if("serviceWorker" in navigator&&location.protocol.startsWith("http"))window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
-
