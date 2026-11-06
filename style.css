@@ -90,3 +90,17 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--pink);outline-o
 .ghost:disabled{opacity:.45;cursor:not-allowed}
 .board{transition:opacity .15s}
 .board.paused{opacity:.5}
+
+/* Touch-friendly buttons (Android recommends at least 48px) */
+.btn,.lv,.ghost{min-height:48px}
+.ghost{font-size:14px}
+.chr{min-height:78px}
+button{-webkit-tap-highlight-color:transparent}
+
+/* Message bar (used for "Press Back again to exit" and "New version ready") */
+.toast{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:30;display:flex;align-items:center;gap:10px;max-width:92vw;padding:10px 12px 10px 16px;border-radius:18px;background:var(--ink);color:var(--card);font-size:14px;font-weight:700;box-shadow:0 8px 24px #0004}
+.toast[hidden]{display:none}
+.toast button{min-height:40px;padding:6px 14px;border:0;border-radius:14px;background:var(--btn);color:#fff;font-weight:700;cursor:pointer}
+
+/* Respect "reduce motion" settings */
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
