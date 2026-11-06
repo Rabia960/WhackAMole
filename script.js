@@ -206,18 +206,19 @@ const S={
 /* Shared online leaderboard.
    Order of preference: Firebase (when firebase-config.js is filled in),
    then the claude.ai page database, then this device only. */
-let db=null,rows=[],liveOnline=false;
+let db=null,rows=[],liveOnline=false,liveWhy="";
 function onRows(snap){rows=snap.docs.map(d=>({id:d.id,...d.data()}));liveOnline=true;if(!$("ov").hidden&&view==="lb")drawBoard()}
-function listen(q){q.onSnapshot(onRows,()=>{liveOnline=false})}
+/* If the shared board fails, the footer shows why (for example "permission-denied") */
+function listen(q){q.onSnapshot(onRows,e=>{liveOnline=false;liveWhy=(e&&(e.code||e.message))||"connection failed";drawBoard.l&&drawBoard()})}
 const FB=window.FIREBASE_CONFIG;
 if(window.firebase&&FB&&FB.projectId){
   try{
     firebase.initializeApp(FB);db=firebase.firestore();
     listen(db.collection("scores").orderBy("best","desc").limit(1500));
-  }catch(e){db=null}
+  }catch(e){db=null;liveWhy=e.message||"setup failed"}
 }else if(window.claude&&claude.use){
   claude.use("db").then(d=>{if(!d)return;db=d;listen(db.collection("scores").limit(500))}).catch(()=>{});
-}
+}else{liveWhy=!window.firebase?"Firebase didn’t load (check your internet or an ad blocker)":"no shared board set up"}
 function saveScore(l,v){
   if(!db)return;
   db.collection("scores").doc(pid+"_"+l).set({name,level:l,best:v,t:Date.now()}).catch(()=>{});
@@ -381,7 +382,7 @@ function drawBoard(l){
       li.append(mk("rk",medal(i)),mk("nm",String(r.name).trim()),mk("sc",r.best));el.appendChild(li)});
   }
   document.querySelectorAll(".ltab").forEach(b=>b.classList.toggle("on",b.dataset.l===l));
-  const nt=$("lnote");if(nt)nt.textContent=liveOnline?`Live leaderboard · ${n} player${n===1?"":"s"}`:"Offline: showing scores from this device only";
+  const nt=$("lnote");if(nt)nt.textContent=liveOnline?`Live leaderboard · ${n} player${n===1?"":"s"}`:`Offline (${liveWhy||"no connection"}): showing scores from this device only`;
 }
 function lbHtml(){return `<div class="row" style="margin-top:10px"><button class="lv ltab" data-l="all">🏅 All</button>${Object.keys(LV).map(l=>`<button class="lv ltab" data-l="${l}">${LN[l]}</button>`).join("")}</div><ol class="lb" id="lbl"></ol><p class="note" id="lnote"></p>`}
 function wireTabs(){document.querySelectorAll(".ltab").forEach(b=>b.onclick=()=>drawBoard(b.dataset.l))}
