@@ -149,6 +149,11 @@ const ART={};
 const ls={get(k,f){try{const v=localStorage.getItem(k);return v===null?f:v}catch(e){return f}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
 const pid=ls.get("wm_pid","")||("p"+Math.random().toString(36).slice(2,10)+Date.now().toString(36));
 ls.set("wm_pid",pid);
+const VERSION="1.2.0";
+/* Error log: the last 20 errors are kept on the device so testers can send them with "Report a problem" */
+function logErr(m){try{const a=JSON.parse(ls.get("wm_errors","[]"));a.push({t:new Date().toISOString(),m:String(m).slice(0,300),ch,level});ls.set("wm_errors",JSON.stringify(a.slice(-20)))}catch(e){}}
+window.addEventListener("error",e=>logErr(`${e.message} @${(e.filename||"").split("/").pop()}:${e.lineno}`));
+window.addEventListener("unhandledrejection",e=>logErr("Promise: "+((e.reason&&e.reason.message)||e.reason)));
 let name=ls.get("wm_name",""),level=ls.get("wm_level","easy"),soundOn=ls.get("wm_sound","on")!=="off";
 if(!LV[level])level="easy";
 let mine={};try{mine=JSON.parse(ls.get("wm_best","{}"))||{}}catch(e){}
@@ -383,7 +388,7 @@ function results(rec){
   wireTabs();drawBoard(level);$("again").onclick=start;$("chg").onclick=welcome;
 }
 $("top").onclick=()=>{view="lb";drawBoard.l="all";openOv(`<h2>🏆 Leaderboard</h2>${lbHtml()}<button class="btn" id="cl">Close</button>`);wireTabs();drawBoard("all");$("cl").onclick=closeOv};
-$("help").onclick=()=>{view="";openOv(`<h2>How to play 🌷</h2>${how()}<button class="btn" id="cl">Got it</button>`);$("cl").onclick=closeOv};
+$("help").onclick=()=>{view="";openOv(`<h2>How to play 🌷</h2>${how()}<button class="btn" id="cl">Got it</button><div class="foot"><button class="ghost" id="rp">🐞 Report a problem</button></div><p class="note">Version ${VERSION} · <a href="privacy.html" target="_blank" rel="noopener" style="color:var(--pink)">Privacy policy</a></p>`);$("cl").onclick=closeOv;$("rp").onclick=report};
 
 $("story").onclick=()=>intro(0,null);
 paintLv();refreshStats();$("snd").textContent=soundOn?"🔊 Sound on":"🔇 Sound off";
@@ -406,4 +411,55 @@ let installEvt=null;
 window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();installEvt=e;$("inst").hidden=false});
 window.addEventListener("appinstalled",()=>{installEvt=null;$("inst").hidden=true});
 $("inst").onclick=async()=>{if(!installEvt)return;installEvt.prompt();try{await installEvt.userChoice}catch(e){}installEvt=null;$("inst").hidden=true};
-if("serviceWorker" in navigator&&location.protocol.startsWith("http"))window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
+/* Small message bar at the bottom (optionally with a button) */
+function toast(msg,label,fn,ms){
+  let t=$("toast");if(!t){t=document.createElement("div");t.id="toast";t.className="toast";t.setAttribute("role","status");document.body.appendChild(t)}
+  t.replaceChildren();const sp=document.createElement("span");sp.textContent=msg;t.appendChild(sp);
+  if(label){const b=document.createElement("button");b.textContent=label;b.onclick=()=>{t.hidden=true;if(fn)fn()};t.appendChild(b)}
+  t.hidden=false;clearTimeout(toast.t);if(ms)toast.t=setTimeout(()=>{t.hidden=true},ms);
+}
+
+/* Report a problem: shares (or copies) a short text with device info and recent errors */
+function reportText(){
+  let errs=[];try{errs=JSON.parse(ls.get("wm_errors","[]"))}catch(e){}
+  return `Tuli’s Whack-a-Thon v${VERSION}\nCharacter: ${ch}, level: ${level}\nScreen: ${innerWidth}x${innerHeight}\nDevice: ${navigator.userAgent}\n\nWhat happened: (please describe)\n\nRecent errors:\n`+(errs.length?errs.map(x=>`${x.t} ${x.m}`).join("\n"):"none");
+}
+async function report(){
+  const text=reportText();
+  try{if(navigator.share){await navigator.share({title:"Whack-a-Thon bug report",text});return}}catch(e){if(e&&e.name==="AbortError")return}
+  try{await navigator.clipboard.writeText(text);toast("Copied! Paste it into a message to the developer.",null,null,5000)}
+  catch(e){window.prompt("Copy this report:",text)}
+}
+
+/* Escape closes popups (the name screen stays until you have a name) */
+function dismissOv(){
+  if($("ov").hidden)return false;
+  const c=$("cl")||$("no");if(c){c.click();return true}
+  if(view==="wel"&&!name)return false;
+  closeOv();return true;
+}
+document.addEventListener("keydown",e=>{if(e.key==="Escape")dismissOv()});
+
+/* Android Back button (installed app only): Back closes a popup, then pauses the game, then asks you to press it again to exit */
+const mm=q=>window.matchMedia&&matchMedia(q).matches;
+const inApp=mm("(display-mode: standalone)")||mm("(display-mode: fullscreen)")||mm("(display-mode: minimal-ui)")||navigator.standalone===true||document.referrer.startsWith("android-app://");
+if(inApp){
+  let armed=false,armT;const guard=()=>history.pushState({guard:1},"");
+  guard();
+  window.addEventListener("popstate",()=>{
+    if(!$("ov").hidden){dismissOv();guard();return}
+    if(playing&&!paused){pause();guard();return}
+    if(!armed){armed=true;toast("Press Back again to exit",null,null,2000);clearTimeout(armT);armT=setTimeout(()=>{armed=false},2000);guard();return}
+    armed=false;history.back();
+  });
+}
+
+/* Offline support + "new version ready" prompt */
+if("serviceWorker" in navigator&&location.protocol.startsWith("http")){
+  const hadController=!!navigator.serviceWorker.controller;
+  navigator.serviceWorker.addEventListener("controllerchange",()=>{if(hadController)toast("✨ New version ready","Reload",()=>location.reload(),0)});
+  window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").then(reg=>{
+    document.addEventListener("visibilitychange",()=>{if(!document.hidden)reg.update().catch(()=>{})});
+    setInterval(()=>reg.update().catch(()=>{}),3600000);
+  }).catch(()=>{}));
+}
