@@ -1,7 +1,7 @@
 // Service worker: lets the game load instantly and work offline once it has been opened.
 // Bump CACHE_VERSION when you deploy changes so players get the new files.
-const CACHE_VERSION = "whackathon-v8";
-const ASSETS = ["./", "index.html", "style.css", "script.js", "firebase-config.js", "manifest.webmanifest", "favicon.svg",
+const CACHE_VERSION = "whackathon-v10";
+const ASSETS = ["./", "index.html", "privacy.html", "style.css", "script.js", "firebase-config.js", "manifest.webmanifest", "favicon.svg",
   "icon-192.png", "icon-512.png", "icon-maskable-512.png", "apple-touch-icon.png"];
 
 self.addEventListener("install", e => {
