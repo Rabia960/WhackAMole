@@ -248,7 +248,15 @@ function show(){
   const h=holes[n];h.innerHTML=curG?ART.g:ART.n;h.classList.add("mole");
   if(curG){h.classList.add("golden");S.gold()}else S.pop();
 }
-function next(){clearTimeout(mt);mt=setTimeout(()=>{if(!playing)return;streak=0;show();next()},speed()*(curG?.7:1))}
+/* Points lost when a mole pops back down without being tapped. Easy has no penalty. */
+const MISS_PEN={easy:{n:0,g:0},medium:{n:1,g:1},hard:{n:1,g:5}};
+function missPenalty(){
+  const p=MISS_PEN[level]||MISS_PEN.easy,lost=curG?p.g:p.n;
+  if(!lost)return;
+  score=Math.max(0,score-lost);$("sc").textContent=score;
+  msg.textContent=`Missed! −${lost} ⭐`;
+}
+function next(){clearTimeout(mt);mt=setTimeout(()=>{if(!playing)return;streak=0;if(cur>=0)missPenalty();show();next()},speed()*(curG?.7:1))}
 function lock(x){go.disabled=x;document.querySelectorAll(".lv").forEach(b=>b.disabled=x);$("help").disabled=x;$("top").disabled=x;$("story").disabled=x}
 function refreshStats(){$("sc").textContent=score;$("tm").textContent=left;$("bs").textContent=mine[level]||0}
 const seen={};
