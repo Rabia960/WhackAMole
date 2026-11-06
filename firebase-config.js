@@ -1,10 +1,6 @@
-// Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
-
-// Your web app's Firebase configuration
-const firebaseConfig = {
+// Online leaderboard settings (Firebase project: whack-a-thon).
+// Leave this EMPTY and the game still works: scores are then kept on this device only.
+window.FIREBASE_CONFIG = {
   apiKey: "AIzaSyCEjLJ62Vr281nma6n67Q1WsixTPNEYQIQ",
   authDomain: "whack-a-thon.firebaseapp.com",
   projectId: "whack-a-thon",
@@ -12,6 +8,3 @@ const firebaseConfig = {
   messagingSenderId: "414478170703",
   appId: "1:414478170703:web:2d847e66ba7eb30911483a"
 };
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
