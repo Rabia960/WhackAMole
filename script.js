@@ -222,10 +222,14 @@ function saveScore(l,v){
   if(!db)return;
   db.collection("scores").doc(pid+"_"+l).set({name,level:l,best:v,t:Date.now()}).catch(()=>{});
 }
+/* Players are matched by name, so the same name on two devices shows once (keeps the best score) */
+const norm=n=>String(n||"").trim().toLowerCase();
 function boardFor(l){
   let list=rows.filter(r=>r.level===l&&r.name&&typeof r.best==="number");
   if(!liveOnline){list=mine[l]?[{id:pid+"_"+l,name,level:l,best:mine[l]}]:[]}
-  return list.sort((a,b)=>b.best-a.best||(a.t||0)-(b.t||0));
+  const top={};
+  list.forEach(r=>{const k=norm(r.name),o=top[k];if(!o||r.best>o.best||(r.best===o.best&&(r.t||0)<(o.t||0)))top[k]=r});
+  return Object.values(top).sort((a,b)=>b.best-a.best||(a.t||0)-(b.t||0));
 }
 
 /* Game */
@@ -349,7 +353,7 @@ function allBoard(){
   const src=liveOnline?rows.filter(r=>r.name&&LV[r.level]&&typeof r.best==="number")
     :Object.keys(LV).filter(l=>mine[l]).map(l=>({id:pid+"_"+l,name,level:l,best:mine[l]}));
   src.forEach(r=>{
-    const k=r.id.slice(0,r.id.lastIndexOf("_")),p=m[k]||(m[k]={id:k,name:r.name,t:0,b:{}});
+    const k=norm(r.name),p=m[k]||(m[k]={key:k,name:r.name,t:0,b:{}});
     p.b[r.level]=Math.max(p.b[r.level]||0,r.best);
     if((r.t||0)>=p.t){p.t=r.t||0;p.name=r.name}
   });
@@ -367,14 +371,14 @@ function drawBoard(l){
     if(!n)empty();else{
       const hd=document.createElement("li");hd.className="hd";
       hd.append(mk("rk",""),mk("nm","Player"),mk("c","Easy"),mk("c","Med"),mk("c","Hard"));el.appendChild(hd);
-      list.forEach((p,i)=>{const li=document.createElement("li");if(p.id===pid)li.className="me";
-        li.append(mk("rk",medal(i)),mk("nm",p.name),...Object.keys(LV).map(k=>mk("c",p.b[k]===undefined?"–":p.b[k])));el.appendChild(li)});
+      list.forEach((p,i)=>{const li=document.createElement("li");if(p.key===norm(name))li.className="me";
+        li.append(mk("rk",medal(i)),mk("nm",String(p.name).trim()),...Object.keys(LV).map(k=>mk("c",p.b[k]===undefined?"–":p.b[k])));el.appendChild(li)});
     }
   }else{
     const list=boardFor(l);n=list.length;
     if(!n)empty();
-    list.forEach((r,i)=>{const li=document.createElement("li");if(r.id===pid+"_"+l)li.className="me";
-      li.append(mk("rk",medal(i)),mk("nm",r.name),mk("sc",r.best));el.appendChild(li)});
+    list.forEach((r,i)=>{const li=document.createElement("li");if(norm(r.name)===norm(name))li.className="me";
+      li.append(mk("rk",medal(i)),mk("nm",String(r.name).trim()),mk("sc",r.best));el.appendChild(li)});
   }
   document.querySelectorAll(".ltab").forEach(b=>b.classList.toggle("on",b.dataset.l===l));
   const nt=$("lnote");if(nt)nt.textContent=liveOnline?`Live leaderboard · ${n} player${n===1?"":"s"}`:"Offline: showing scores from this device only";
