@@ -406,12 +406,15 @@ function drawBoard(l){
     }
   }else{
     const list=boardFor(l);n=list.length;
-    if(!n)empty();
+    if(!n)empty();else{
+      const hd=document.createElement("li");hd.className="hd";
+      hd.append(mk("rk",""),mk("nm","Player"),mk("c2","Best"),mk("c2","Latest"));el.appendChild(hd);
+    }
     list.forEach((r,i)=>{const li=document.createElement("li");if(norm(r.name)===norm(name))li.className="me";
-      li.append(mk("rk",medal(i)),mk("nm",String(r.name).trim()),cell(r.best,r.last,"sc"));el.appendChild(li)});
+      li.append(mk("rk",medal(i)),mk("nm",String(r.name).trim()),mk("c2 best",r.best),mk("c2 latest",r.last??r.best));el.appendChild(li)});
   }
   document.querySelectorAll(".ltab").forEach(b=>b.classList.toggle("on",b.dataset.l===l));
-  const nt=$("lnote");if(nt)nt.textContent=liveOnline?`Live leaderboard · ${n} player${n===1?"":"s"} · big = best, small = latest`:`Offline (${liveWhy||"no connection"}): showing scores from this device only`;
+  const nt=$("lnote");if(nt)nt.textContent=liveOnline?`Live leaderboard · ${n} player${n===1?"":"s"} · Best = highest score, Latest = last game`:`Offline (${liveWhy||"no connection"}): showing scores from this device only`;
 }
 function lbHtml(){return `<div class="row" style="margin-top:10px"><button class="lv ltab" data-l="all">🏅 All</button>${Object.keys(LV).map(l=>`<button class="lv ltab" data-l="${l}">${LN[l]}</button>`).join("")}</div><ol class="lb" id="lbl"></ol><p class="note" id="lnote"></p>`}
 function wireTabs(){document.querySelectorAll(".ltab").forEach(b=>b.onclick=()=>drawBoard(b.dataset.l))}
