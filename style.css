@@ -104,3 +104,10 @@ button{-webkit-tap-highlight-color:transparent}
 
 /* Respect "reduce motion" settings */
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* Best (big) and latest game (small) in each leaderboard cell */
+.lb .c{width:40px;flex:none}
+.lb .c small{display:block;font-size:10px;font-weight:600;color:var(--soft);line-height:1.2}
+.lb .sc small{font-size:11px}
+.lb .rk{width:30px;flex:none}
+.lb li{gap:6px;padding:8px 8px}
