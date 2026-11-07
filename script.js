@@ -219,18 +219,23 @@ if(window.firebase&&FB&&FB.projectId){
 }else if(window.claude&&claude.use){
   claude.use("db").then(d=>{if(!d)return;db=d;listen(db.collection("scores").limit(500))}).catch(()=>{});
 }else{liveWhy=!window.firebase?"Firebase didn’t load (check your internet or an ad blocker)":"no shared board set up"}
-function saveScore(l,v){
+/* One shared entry per device, name and level. The doc id ends with _<level>, as the rules require. */
+function saveScore(l,best,last){
   if(!db)return;
-  db.collection("scores").doc(pid+"_"+l).set({name,level:l,best:v,t:Date.now()}).catch(()=>{});
+  const slug=norm(name).replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,20)||"player";
+  db.collection("scores").doc(pid+"_"+slug+"_"+l).set({name,level:l,best,last,t:Date.now()}).catch(()=>{});
 }
 /* Players are matched by name, so the same name on two devices shows once (keeps the best score) */
 const norm=n=>String(n||"").trim().toLowerCase();
 function boardFor(l){
   let list=rows.filter(r=>r.level===l&&r.name&&typeof r.best==="number");
-  if(!liveOnline){list=mine[l]?[{id:pid+"_"+l,name,level:l,best:mine[l]}]:[]}
-  const top={};
-  list.forEach(r=>{const k=norm(r.name),o=top[k];if(!o||r.best>o.best||(r.best===o.best&&(r.t||0)<(o.t||0)))top[k]=r});
-  return Object.values(top).sort((a,b)=>b.best-a.best||(a.t||0)-(b.t||0));
+  if(!liveOnline){let lm={};try{lm=JSON.parse(ls.get("wm_lastL","{}"))||{}}catch(e){}
+    list=mine[l]?[{id:pid+"_"+l,name,level:l,best:mine[l],last:lm[l]||mine[l],t:Date.now()}]:[]}
+  const top={},latest={};
+  list.forEach(r=>{const k=norm(r.name),o=top[k];
+    if(!o||r.best>o.best||(r.best===o.best&&(r.t||0)<(o.t||0)))top[k]=r;
+    const L=latest[k];if(!L||(r.t||0)>=(L.t||0))latest[k]=r});
+  return Object.keys(top).map(k=>({...top[k],last:latest[k].last??latest[k].best})).sort((a,b)=>b.best-a.best||(a.t||0)-(b.t||0));
 }
 
 /* Game */
@@ -273,7 +278,15 @@ function begin(){
 function end(){
   playing=false;clearTimeout(mt);clearInterval(cd);reset();cur=-1;S.end();
   const rec=score>0&&score>(mine[level]||0);
-  if(rec){mine[level]=score;ls.set("wm_best",JSON.stringify(mine));saveScore(level,score);S.record()}
+  if(rec){mine[level]=score;ls.set("wm_best",JSON.stringify(mine));S.record()}
+  /* Best score for this name on this device, so a new name starts its own shared entry */
+  const nk=norm(name)+"|"+level;let bn={};try{bn=JSON.parse(ls.get("wm_bestn","{}"))||{}}catch(e){}
+  if(score>0){
+    bn[nk]=Math.max(bn[nk]||0,score);ls.set("wm_bestn",JSON.stringify(bn));saveScore(level,bn[nk],score);
+    /* latest score per level on this device (used when the shared board is offline) */
+    let lm={};try{lm=JSON.parse(ls.get("wm_lastL","{}"))||{}}catch(e){}
+    lm[level]=score;ls.set("wm_lastL",JSON.stringify(lm));
+  }
   msg.textContent=`Time’s up! ${score} points 🎉`;go.textContent="Play Again 🔄";lock(false);refreshStats();paused=false;board.classList.remove("paused");paintCtl();
   results(rec);
 }
@@ -359,11 +372,13 @@ function welcome(){
 /* Everyone, with their best score on each level side by side */
 function allBoard(){
   const m={};
+  let lm={};try{lm=JSON.parse(ls.get("wm_lastL","{}"))||{}}catch(e){}
   const src=liveOnline?rows.filter(r=>r.name&&LV[r.level]&&typeof r.best==="number")
-    :Object.keys(LV).filter(l=>mine[l]).map(l=>({id:pid+"_"+l,name,level:l,best:mine[l]}));
+    :Object.keys(LV).filter(l=>mine[l]).map(l=>({id:pid+"_"+l,name,level:l,best:mine[l],last:lm[l]||mine[l],t:Date.now()}));
   src.forEach(r=>{
-    const k=norm(r.name),p=m[k]||(m[k]={key:k,name:r.name,t:0,b:{}});
+    const k=norm(r.name),p=m[k]||(m[k]={key:k,name:r.name,t:0,b:{},L:{}});
     p.b[r.level]=Math.max(p.b[r.level]||0,r.best);
+    const cur=p.L[r.level];if(!cur||(r.t||0)>=cur.t)p.L[r.level]={v:r.last??r.best,t:r.t||0};
     if((r.t||0)>=p.t){p.t=r.t||0;p.name=r.name}
   });
   return Object.values(m).map(p=>({...p,total:Object.values(p.b).reduce((x,y)=>x+y,0)})).sort((x,y)=>y.total-x.total||x.t-y.t);
@@ -373,6 +388,12 @@ function drawBoard(l){
   el.replaceChildren();
   const mk=(c,t)=>{const s=document.createElement("span");s.className=c;s.textContent=t;return s};
   const medal=i=>i<3?["🥇","🥈","🥉"][i]:"#"+(i+1);
+  /* big number = best score, small line = latest game */
+  const cell=(best,last,cls="c")=>{const s=document.createElement("span");s.className=cls;
+    if(best===undefined){s.textContent="–";return s}
+    s.append(document.createTextNode(String(best)));
+    if(last!==undefined){const sm=document.createElement("small");sm.textContent=String(last);s.appendChild(sm)}
+    return s};
   const empty=()=>{const li=document.createElement("li");li.textContent="No scores yet. Be the first! 🌸";el.appendChild(li)};
   let n;
   if(l==="all"){
@@ -381,16 +402,16 @@ function drawBoard(l){
       const hd=document.createElement("li");hd.className="hd";
       hd.append(mk("rk",""),mk("nm","Player"),mk("c","Easy"),mk("c","Med"),mk("c","Hard"));el.appendChild(hd);
       list.forEach((p,i)=>{const li=document.createElement("li");if(p.key===norm(name))li.className="me";
-        li.append(mk("rk",medal(i)),mk("nm",String(p.name).trim()),...Object.keys(LV).map(k=>mk("c",p.b[k]===undefined?"–":p.b[k])));el.appendChild(li)});
+        li.append(mk("rk",medal(i)),mk("nm",String(p.name).trim()),...Object.keys(LV).map(k=>cell(p.b[k],p.L[k]&&p.L[k].v)));el.appendChild(li)});
     }
   }else{
     const list=boardFor(l);n=list.length;
     if(!n)empty();
     list.forEach((r,i)=>{const li=document.createElement("li");if(norm(r.name)===norm(name))li.className="me";
-      li.append(mk("rk",medal(i)),mk("nm",String(r.name).trim()),mk("sc",r.best));el.appendChild(li)});
+      li.append(mk("rk",medal(i)),mk("nm",String(r.name).trim()),cell(r.best,r.last,"sc"));el.appendChild(li)});
   }
   document.querySelectorAll(".ltab").forEach(b=>b.classList.toggle("on",b.dataset.l===l));
-  const nt=$("lnote");if(nt)nt.textContent=liveOnline?`Live leaderboard · ${n} player${n===1?"":"s"}`:`Offline (${liveWhy||"no connection"}): showing scores from this device only`;
+  const nt=$("lnote");if(nt)nt.textContent=liveOnline?`Live leaderboard · ${n} player${n===1?"":"s"} · big = best, small = latest`:`Offline (${liveWhy||"no connection"}): showing scores from this device only`;
 }
 function lbHtml(){return `<div class="row" style="margin-top:10px"><button class="lv ltab" data-l="all">🏅 All</button>${Object.keys(LV).map(l=>`<button class="lv ltab" data-l="${l}">${LN[l]}</button>`).join("")}</div><ol class="lb" id="lbl"></ol><p class="note" id="lnote"></p>`}
 function wireTabs(){document.querySelectorAll(".ltab").forEach(b=>b.onclick=()=>drawBoard(b.dataset.l))}
