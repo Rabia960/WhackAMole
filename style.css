@@ -111,3 +111,8 @@ button{-webkit-tap-highlight-color:transparent}
 .lb .sc small{font-size:11px}
 .lb .rk{width:30px;flex:none}
 .lb li{gap:6px;padding:8px 8px}
+
+/* Level tabs: separate Best and Latest columns */
+.lb .c2{width:58px;flex:none;text-align:right;font-weight:700;color:var(--pink);font-size:15px}
+.lb .c2.latest{color:var(--soft);font-weight:600;font-size:14px}
+.lb li.hd .c2{color:var(--soft);font-size:12px}
